@@ -60,6 +60,12 @@ return [
             'report' => false,
         ],
 
+        'components' => [
+        'driver' => 'local',
+        'root' => storage_path('app/components'),
+        'throw' => false,
+        ],
+
     ],
 
     /*
