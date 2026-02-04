@@ -25,7 +25,7 @@ export default function CollapsibleSection({
 
     return (
         <div className="mb-6 rounded-lg border border-gray-200">
-            <button
+            <div
                 onClick={toggle}
                 className="flex w-full cursor-pointer items-center justify-between rounded-lg px-4 py-3 text-left font-semibold hover:bg-gray-50"
             >
@@ -35,7 +35,7 @@ export default function CollapsibleSection({
                 ) : (
                     <ChevronDown className="h-5 w-5 text-gray-500" />
                 )}
-            </button>
+            </div>
             {isExpanded && <div className="px-4 pt-2 pb-4">{children}</div>}
         </div>
     );

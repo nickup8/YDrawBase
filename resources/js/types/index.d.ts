@@ -48,3 +48,43 @@ export interface FileData {
     extension: string;
     size: string;
 }
+
+export interface PaginationLinks {
+    first: string;
+    last: string;
+    next: string | null;
+    prev: string | null;
+}
+
+export interface PaginationMetaLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+export interface PaginationMeta {
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    links: PaginationMetaLink[];
+    path: string;
+    per_page: number;
+    to: number | null;
+    total: number;
+}
+
+export interface PropsResponse<T> {
+    data: T[];
+    links: PaginationLinks;
+    meta: PaginationMeta;
+}
+
+export interface ComponentType {
+    id: number;
+    ypn: string;
+    supplier_pn: string;
+    supplier: string;
+    description: string;
+    created_at: string;
+    updated_at: string;
+}

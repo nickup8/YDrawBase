@@ -1,15 +1,23 @@
 // components/MultiFileUpload.tsx
 import { getFileAddLabel } from '@/lib/utils';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import SingleFileUpload from './single-file-upload';
 import { Label } from './ui/label';
-// ❗ Импортируем утилиту
 
 interface MultiFileUploadProps {
-    label: string; // ❗ Например: "Чертеж", "Спецификация"
+    label: string;
     initialFiles: File[];
     onFilesChange: (files: File[]) => void;
 }
+
+// Утилиты вынесены для читаемости
+const formatFileSize = (size: number): string =>
+    size > 1024 * 1024
+        ? `${(size / (1024 * 1024)).toFixed(2)} МБ`
+        : `${Math.round(size / 1024)} КБ`;
+
+const getFileExtension = (filename: string): string =>
+    filename.split('.').pop()?.toUpperCase() || '';
 
 export default function MultiFileUpload({
     label,
@@ -17,104 +25,98 @@ export default function MultiFileUpload({
     onFilesChange,
 }: MultiFileUploadProps) {
     const [files, setFiles] = useState<File[]>(initialFiles);
-    const [fileStates, setFileStates] = useState<
-        Array<{
-            name: string | null;
-            extension: string;
-            size: string;
-        }>
-    >(
-        initialFiles.map((file) => ({
-            name: file.name,
-            extension: file.name.split('.').pop()?.toUpperCase() || '',
-            size:
-                file.size > 1024 * 1024
-                    ? `${(file.size / (1024 * 1024)).toFixed(2)} МБ`
-                    : `${Math.round(file.size / 1024)} КБ`,
-        })),
-    );
+
+    // Единый скрытый инпут для добавления НОВЫХ файлов
+    const addFileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (file: File, index: number) => {
         const newFiles = [...files];
-        const newStates = [...fileStates];
-
         newFiles[index] = file;
-        newStates[index] = {
-            name: file.name,
-            extension: file.name.split('.').pop()?.toUpperCase() || '',
-            size:
-                file.size > 1024 * 1024
-                    ? `${(file.size / (1024 * 1024)).toFixed(2)} МБ`
-                    : `${Math.round(file.size / 1024)} КБ`,
-        };
-
         setFiles(newFiles);
-        setFileStates(newStates);
         onFilesChange(newFiles);
-    };
-
-    const handleAddFile = () => {
-        // Проверяем, что последний файл загружен
-        const lastFileState = fileStates[fileStates.length - 1];
-        if (lastFileState && lastFileState.name) {
-            // Добавляем новый пустой инпут
-            const newFiles = [...files, null as unknown as File];
-            const newStates = [
-                ...fileStates,
-                { name: null, extension: '', size: '' },
-            ];
-
-            setFiles(newFiles);
-            setFileStates(newStates);
-        }
     };
 
     const handleRemoveFile = (index: number) => {
         const newFiles = files.filter((_, i) => i !== index);
-        const newStates = fileStates.filter((_, i) => i !== index);
-
         setFiles(newFiles);
-        setFileStates(newStates);
         onFilesChange(newFiles);
     };
 
-    // ❗ Проверяем, нужно ли показывать кнопку
-    const shouldShowAddButton =
-        fileStates.length > 0 && fileStates[fileStates.length - 1]?.name;
+    // Ключевое изменение: при нажатии кнопки — сразу открываем диалог
+    const handleAddFile = () => {
+        addFileInputRef.current?.click();
+    };
+
+    // Обработчик выбора НОВОГО файла через скрытый инпут
+    const handleNewFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const newFiles = [...files, file];
+            setFiles(newFiles);
+            onFilesChange(newFiles);
+
+            // Сбрасываем значение инпута для повторного использования
+            if (addFileInputRef.current) {
+                addFileInputRef.current.value = '';
+            }
+        }
+    };
 
     return (
         <div className="mb-4">
-            <Label htmlFor={`${label}-0`}>{label}</Label>
+            <Label>{label}</Label>
             <div className="mt-1 rounded-lg border border-dashed border-gray-300 p-3">
+                {/* Рендерим существующие файлы */}
                 {files.length > 0 ? (
-                    files.map((_, index) => (
+                    files.map((file, index) => (
                         <SingleFileUpload
-                            key={index}
+                            key={`${file.name}-${file.size}-${index}`}
                             label={`${label}-${index}`}
-                            fileState={fileStates[index]}
-                            onFileChange={(file) =>
-                                handleFileChange(file, index)
+                            fileState={{
+                                name: file.name,
+                                extension: getFileExtension(file.name),
+                                size: formatFileSize(file.size),
+                            }}
+                            onFileChange={(newFile) =>
+                                handleFileChange(newFile, index)
                             }
                             onRemove={() => handleRemoveFile(index)}
-                            showRemoveButton={!!fileStates[index].name}
+                            showRemoveButton={true}
                         />
                     ))
                 ) : (
+                    // Если нет файлов — показываем первый инпут
                     <SingleFileUpload
+                        key="initial"
                         label={label}
                         fileState={{ name: null, extension: '', size: '' }}
-                        onFileChange={(file) => handleFileChange(file, 0)}
-                        onRemove={() => handleRemoveFile(0)}
+                        onFileChange={(file) => {
+                            const newFiles = [file];
+                            setFiles(newFiles);
+                            onFilesChange(newFiles);
+                        }}
+                        onRemove={() => {}}
                         showRemoveButton={false}
                     />
                 )}
-                {shouldShowAddButton && (
+
+                {/* Скрытый инпут ДЛЯ ДОБАВЛЕНИЯ НОВЫХ ФАЙЛОВ */}
+                <input
+                    type="file"
+                    ref={addFileInputRef}
+                    className="hidden"
+                    onChange={handleNewFileSelect}
+                    accept=".pdf,.dwg,.dxf,.jpg,.png,.jpeg"
+                />
+
+                {/* Кнопка всегда видна, если есть хотя бы один загруженный файл */}
+                {files.length > 0 && (
                     <button
                         type="button"
                         onClick={handleAddFile}
                         className="mt-2 cursor-pointer text-sm text-blue-500 hover:text-blue-700"
                     >
-                        {getFileAddLabel(label)} {/* ❗ Используем утилиту */}
+                        {getFileAddLabel(label)}
                     </button>
                 )}
             </div>

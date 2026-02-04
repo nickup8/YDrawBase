@@ -8,14 +8,21 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
+import { index } from '@/routes/components';
 import { Head, useForm } from '@inertiajs/react';
 import { SendHorizonal } from 'lucide-react';
 
 export default function Home() {
-    const { data, setData } = useForm({
+    const { data, setData, submit } = useForm({
         searchType: 'ypn',
         searchValue: '',
     });
+
+    const onSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Обработка формы
+        submit(index());
+    };
 
     return (
         <AppLayout>
@@ -23,7 +30,10 @@ export default function Home() {
 
             <div className="absolute top-1/2 left-1/2 w-full max-w-3xl -translate-x-1/2 -translate-y-1/2 text-center">
                 <h1 className="mb-4 text-3xl font-bold">База компонентов</h1>
-                <form className="relative rounded-full bg-gray-100">
+                <form
+                    className="relative rounded-full bg-gray-100"
+                    onSubmit={onSubmit}
+                >
                     <div className="absolute top-0 left-0 w-22">
                         <Select
                             value={data.searchType}
@@ -58,6 +68,7 @@ export default function Home() {
                         className="absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer rounded-full bg-[#ED1C24] py-7 text-white hover:bg-[#ED1C24]/80"
                         variant={'link'}
                         disabled={!data.searchValue}
+                        type="submit"
                     >
                         <SendHorizonal className="size-8" />
                     </Button>

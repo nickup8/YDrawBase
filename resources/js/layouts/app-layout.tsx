@@ -18,6 +18,7 @@ import { SharedData, type BreadcrumbItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 import { type ReactNode } from 'react';
+import { Toaster } from 'sonner';
 
 interface AppLayoutProps {
     children: ReactNode;
@@ -75,6 +76,7 @@ export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => {
                 </div>
             </header>
             <main className="mx-auto w-full max-w-7xl py-6">{children}</main>
+            <Toaster position="bottom-right" richColors closeButton />
         </div>
     );
 };

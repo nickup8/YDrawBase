@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ComponentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -15,9 +16,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::get('components/create', function () {
-        return Inertia::render('componentsPage/component-create');
-    })->name('components.create');
+    
 });
 
 require __DIR__.'/settings.php';
+require __DIR__.'/components.php';
