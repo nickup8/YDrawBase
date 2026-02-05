@@ -12,6 +12,7 @@ export default function ComponentSearch({
     components: PropsResponse<ComponentType>; // ✅ Используем правильный тип
     searchValue: string;
 }) {
+    console.log(components.data);
     return (
         <AppLayout>
             <Head title="Поиск компонентов" />

@@ -1,3 +1,4 @@
+import { index } from '@/actions/App/Http/Controllers/ComponentController';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -8,7 +9,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { index } from '@/routes/components';
+
 import { Head, useForm } from '@inertiajs/react';
 import { SendHorizonal } from 'lucide-react';
 

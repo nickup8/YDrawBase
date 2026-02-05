@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class ComponentFile extends Model
@@ -23,7 +25,7 @@ class ComponentFile extends Model
     /**
      * Связь с компонентом
      */
-    public function component()
+    public function component(): BelongsTo
     {
         return $this->belongsTo(Component::class);
     }
@@ -31,7 +33,7 @@ class ComponentFile extends Model
     /**
      * Связь с логами скачиваний
      */
-    public function downloadLogs()
+    public function downloadLogs(): HasMany
     {
         return $this->hasMany(DownloadLog::class, 'component_file_id');
     }
@@ -62,6 +64,7 @@ class ComponentFile extends Model
             'image/png',
             'image/gif',
             'image/webp',
+            'image/jpg',
         ]);
     }
 
@@ -122,5 +125,38 @@ class ComponentFile extends Model
             'ip_address' => request()->ip(),
             'downloaded_at' => now(),
         ]);
+    }
+
+    /**
+     * Получить иконку для типа файла
+     */
+    public function getIcon(): string
+    {
+        if ($this->isImage()) {
+            return 'image';
+        }
+        
+        if ($this->mime_type === 'application/pdf') {
+            return 'file-pdf';
+        }
+        
+        if (in_array($this->mime_type, ['application/acad', 'application/dwg', 'image/vnd.dwg'])) {
+            return 'file-dwg';
+        }
+        
+        return 'file';
+    }
+
+    /**
+     * Получить цвет для типа файла
+     */
+    public function getColor(): string
+    {
+        return match ($this->type) {
+            'drawing' => 'blue',
+            'specification' => 'green',
+            'crimp_standard' => 'orange',
+            default => 'gray',
+        };
     }
 }
